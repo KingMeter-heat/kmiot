@@ -15,3 +15,5 @@ export const UpgradeFailed = 'upgrade this device failed,please try again.';
 export const Http401 = "You don't have this permission"
 export const HttpTimeOut = "request timeout"
 
+export const NoNeedUpgrade = 'The version of this hardware is the latest!';
+

@@ -8,19 +8,18 @@ import {
     queryLockInfo,
     rename,
     restart,
-    shutDown,
-    writePhoneMacToDevice
+    shutDown
 } from "../heat/HeatFuctions";
 import {FONT_COLOR, POWER_OFF_COLOR, THEME_BACKEND, THEME_GREY} from "../components/constant/Color";
 import {DEVICE_WIDTH} from "../components/constant/Size";
 import Battery from "../components/battery";
 import {log_info} from "../utils/LogUtils";
 import {notify} from "../components/notify/notify";
-import {ClearMacSucceed, YouCanOnlyInputNumber, YouNeedToConnectDeviceNotification} from "../business/Language";
+import {YouCanOnlyInputNumber, YouNeedToConnectDeviceNotification} from "../business/Language";
 import {BTUpgradeDFU} from "../components/views/BTUpgradeDFU";
 import {Modal, Switch} from '@ant-design/react-native';
 import InputItem from '@ant-design/react-native/es/input-item';
-import {request} from "../utils/http";
+// import {request} from "../utils/http";
 import HeatLevelView from "../components/views/HeatLevelView";
 import {store} from "../bluetooth/redux/BTStore";
 import {setNearbyDeviceMap, setPeripheralMap2} from "../bluetooth/redux/BTActions";
@@ -29,42 +28,19 @@ import {DEVICE_TYPE} from "../device/DeviceType";
 const SIZE = 40;
 const TITLE_SIZE = 80;
 
-// export default class DeviceInfoPage extends Component {
-//
-//     constructor(props) {
-//         super();
-//         this.state = {
-//             item: props.item,
-//             currentMac: props.item.id,
-//             navigation: props.navigation
-//         }
-//     }
-//
-//     UNSAFE_componentWillMount() {
-//         if (isConnected(this.state.currentMac)) {
-//             log_info("device info page useEffect,connected")
-//             _dealWithConnected();
-//         }
-//     }
-//
-//     render() {
-//         return <DeviceInfoPageView navigation={this.state.navigation}
-//                                    item={this.state.item}/>;
-//     }
-// }
-
-
 export const DeviceInfoPage = props => {
     const returnImg = require('../images/return.png');
 
     const [codeModalVisible, setCodeModalVisible] = useState(false);
+    const [nameModalVisible, setNameModalVisible] = useState(false);
+    const [resetModalVisible, setResetModalVisible] = useState(false);
+    const [shutdownModalVisible, setShutdownModalVisible] = useState(false);
     const [newCode, setNewCode] = useState('');
+    const [newName, setNewName] = useState('');
 
     const item = props.item;
     const currentMac = item.id;
     const navigation = props.navigation;
-
-    const growAnimated = new Animated.Value(0);
 
     const heat_component = useRef(null);
 
@@ -76,8 +52,6 @@ export const DeviceInfoPage = props => {
     const [softwareVersion, setSoftwareVersion] = useState('');
     const [hardwareVersion, setHardwareVersion] = useState('');
 
-    const [currentPhoneMac, setCurrentPhoneMac] = useState('');
-
     const [checked, setChecked] = useState(false);
 
     const [batteryColor, setBatteryColor] = useState(THEME_GREY);
@@ -86,7 +60,6 @@ export const DeviceInfoPage = props => {
     const [restartButtonColorStyle, setRestartButtonColorStyle] = useState();
     const [offButtonColorStyle, setOffButtonColorStyle] = useState();
     const [renameButtonColorStyle, setRenameButtonColorStyle] = useState();
-    const [clearButtonColorStyle, setClearButtonColorStyle] = useState();
 
     const currentUpdateInfoTimer = useRef();
 
@@ -96,22 +69,12 @@ export const DeviceInfoPage = props => {
 
     useEffect(() => {
         log_info("device info page useEffect")
-        // if (isConnected(currentMac)) {
-        //     log_info("device info page useEffect,connected")
-        //     _dealWithConnected();
-        // }
         return (() => {
             clearInterval(currentUpdateInfoTimer.current);
         });
     }, [])
 
     const _back = () => {
-        // Animated.timing(growAnimated, {
-        //     toValue: 1,
-        //     duration: 300,
-        //     easing: Easing.linear,
-        //     useNativeDriver: false,
-        // }).start();
 
         clearInterval(currentUpdateInfoTimer.current);
 
@@ -128,16 +91,15 @@ export const DeviceInfoPage = props => {
     const _showDeviceInfo = (info) => {
         setChecked(true);
         setBatteryColor(THEME_BACKEND)
-        setSoftwareVersion(info.software_version);
-        setHardwareVersion(info.hardware_version);
+        setSoftwareVersion('V' + info.software_version);
+        setHardwareVersion('V' + info.hardware_version);
         if (heat_component.current != null) {
             heat_component.current.setLevel(info.heat_gear);
             heat_component.current.setOnOff(info.heat_state);
         }
         setCurrentCode(info.customerId);
         setBatteryCapacity(info.battery_capacity <= 100 ? info.battery_capacity : 100);
-        setChargingStatus(info.charging_state === 1 ? "Charging" : "Not Charge");
-        setCurrentPhoneMac(info.phoneMacFromDevice);
+        setChargingStatus(info.charging_state === 1 ? "Yes" : "No");
     }
 
     const _dealWithConnected = () => {
@@ -160,7 +122,7 @@ export const DeviceInfoPage = props => {
     const _connectPress = (checked) => {
         if (checked) {
             //连接设备
-            connect(currentMac, currentName,DEVICE_TYPE.HEAT,() => {
+            connect(currentMac, currentName, DEVICE_TYPE.HEAT, () => {
                 _dealWithConnected();
             }, (message) => {
                 notify(message, 2)
@@ -199,14 +161,14 @@ export const DeviceInfoPage = props => {
             return;
         }
         setOffButtonColorStyle({color: POWER_OFF_COLOR});
-        shutDown(currentMac, () => {
-            _dealWithDisconnected();
-            setOffButtonColorStyle({color: FONT_COLOR});
-        }, currentName);
+        setShutdownModalVisible(true);
     }
 
     const _dealWithDisconnected = () => {
         setChecked(false);
+        setCurrentCode('')
+        setHardwareVersion('')
+        setSoftwareVersion('')
         setBatteryColor(THEME_GREY)
         setChargingStatus('');
         setBatteryCapacity(0);
@@ -227,57 +189,44 @@ export const DeviceInfoPage = props => {
         clearInterval(currentUpdateInfoTimer.current);
     }
 
-    const _clearMac = () => {
-        log_info("clearMac" + isConnected(currentMac));
-        if (!isConnected(currentMac)) {
-            notify(YouNeedToConnectDeviceNotification);
-            return;
-        }
-        setClearButtonColorStyle({color: POWER_OFF_COLOR});
-        writePhoneMacToDevice(currentMac, [0x30, 0x30, 0x30, 0x30, 0x30, 0x30], () => {
-            // setCurrentPhoneMac('');
-            // _dealWithDisconnected();
-            notify(ClearMacSucceed);
-            setClearButtonColorStyle({color: FONT_COLOR});
-        })
-    }
-
     const _rename = () => {
         if (!isConnected(currentMac)) {
             notify(YouNeedToConnectDeviceNotification);
             return;
         }
         setRenameButtonColorStyle({color: POWER_OFF_COLOR});
-        request({
-            'url': '/device/getNumber',
-            'params': {'type': 'HotShoeType', 'mac': '', 'previousNumber': ''}
-        }).then((res) => {
-            let name = res;
-            log_info("rename get " + name);
-            rename(currentMac, String(name), () => {
-                log_info("rename new name " + name);
-                setCurrentName(name);
-                let newMap = store.getState().nearbyDeviceMap;
-                if (newMap.has(currentMac)) {
-                    newMap.set(currentMac, {
-                        id: currentMac,
-                        title: String(name),
-                        bond: true
-                    });
-                    store.dispatch(setNearbyDeviceMap(newMap));
-                }
+        setNameModalVisible(true);
 
-                let newMap2 = store.getState().peripheralMap;
-                if (newMap2.has(currentMac)) {
-                    let peripheral = newMap2.get(currentMac);
-                    peripheral.name = String(name);
-                    newMap2.set(currentMac, peripheral);
-                    store.dispatch(setPeripheralMap2(newMap2));
-                }
-                setRenameButtonColorStyle({color: FONT_COLOR});
-                _dealWithDisconnected();
-            })
-        })
+        // request({
+        //     'url': '/device/getNumber',
+        //     'params': {'type': 'HotShoeType', 'mac': '', 'previousNumber': ''}
+        // }).then((res) => {
+        //     let name = res;
+        //     log_info("rename get " + name);
+        //     rename(currentMac, String(name), () => {
+        //         log_info("rename new name " + name);
+        //         setCurrentName(name);
+        //         let newMap = store.getState().nearbyDeviceMap;
+        //         if (newMap.has(currentMac)) {
+        //             newMap.set(currentMac, {
+        //                 id: currentMac,
+        //                 title: String(name),
+        //                 bond: true
+        //             });
+        //             store.dispatch(setNearbyDeviceMap(newMap));
+        //         }
+        //
+        //         let newMap2 = store.getState().peripheralMap;
+        //         if (newMap2.has(currentMac)) {
+        //             let peripheral = newMap2.get(currentMac);
+        //             peripheral.name = String(name);
+        //             newMap2.set(currentMac, peripheral);
+        //             store.dispatch(setPeripheralMap2(newMap2));
+        //         }
+        //         setRenameButtonColorStyle({color: FONT_COLOR});
+        //         _dealWithDisconnected();
+        //     })
+        // })
     }
 
     const _restart = () => {
@@ -285,15 +234,10 @@ export const DeviceInfoPage = props => {
             notify(YouNeedToConnectDeviceNotification);
             return;
         }
+        setResetModalVisible(true);
         setRestartButtonColorStyle({color: POWER_OFF_COLOR})
-        restart(currentMac, () => {
-        })
-        setTimeout(()=>{
-            _dealWithDisconnected();
-            setRestartButtonColorStyle({color: FONT_COLOR})
-        },1000)
     }
-    const footerButtons = [
+    const codeFooterButtons = [
         {
             text: <Text style={{color: THEME_BACKEND}}>Cancel</Text>,
             onPress: () => {
@@ -308,19 +252,86 @@ export const DeviceInfoPage = props => {
                     notify(YouNeedToConnectDeviceNotification);
                     return;
                 }
-                if(typeof newCode ==='number'){
+                if (typeof newCode === 'number') {
                     modifyCustomerId(currentMac, newCode, () => {
                         setCurrentCode(newCode)
                         setNewCode('')
                         _dealWithDisconnected();
                     });
-                }else{
+                } else {
                     setNewCode('')
                     notify(YouCanOnlyInputNumber);
                 }
             },
         },
     ];
+    const nameFooterButtons = [
+        {
+            text: <Text style={{color: THEME_BACKEND}}>Cancel</Text>,
+            onPress: () => {
+                setNameModalVisible(false);
+                setNewName('');
+            },
+        },
+        {
+            text: <Text style={{color: THEME_BACKEND}}>Ok</Text>,
+            onPress: () => {
+                if (!isConnected(currentMac)) {
+                    notify(YouNeedToConnectDeviceNotification);
+                    return;
+                }
+                rename(currentMac, newName, () => {
+                    setCurrentName(newName)
+                    setNewName('')
+                    _dealWithDisconnected();
+                });
+            },
+        },
+    ];
+    const resetFooterButtons = [
+        {
+            text: <Text style={{color: THEME_BACKEND}}>Cancel</Text>,
+            onPress: () => {
+                setRestartButtonColorStyle(false);
+            },
+        },
+        {
+            text: <Text style={{color: THEME_BACKEND}}>Ok</Text>,
+            onPress: () => {
+                if (!isConnected(currentMac)) {
+                    notify(YouNeedToConnectDeviceNotification);
+                    return;
+                }
+                restart(currentMac, () => {
+                    _dealWithDisconnected();
+                    setRestartButtonColorStyle({color: FONT_COLOR})
+                });
+            },
+        },
+    ]
+
+    const shutdownFooterButtons = [
+        {
+            text: <Text style={{color: THEME_BACKEND}}>Cancel</Text>,
+            onPress: () => {
+                setShutdownModalVisible(false);
+            },
+        },
+        {
+            text: <Text style={{color: THEME_BACKEND}}>Ok</Text>,
+            onPress: () => {
+                if (!isConnected(currentMac)) {
+                    notify(YouNeedToConnectDeviceNotification);
+                    return;
+                }
+                shutDown(currentMac, () => {
+                    _dealWithDisconnected();
+                    setOffButtonColorStyle({color: FONT_COLOR});
+                }, currentName);
+            },
+        },
+    ]
+
     const _modifyCode = () => {
         if (!isConnected(currentMac)) {
             notify(YouNeedToConnectDeviceNotification);
@@ -341,7 +352,7 @@ export const DeviceInfoPage = props => {
                 }}
                 maskClosable
                 visible={codeModalVisible}
-                footer={footerButtons}
+                footer={codeFooterButtons}
                 style={{
                     margin: 0,
                     padding: 0,
@@ -361,8 +372,80 @@ export const DeviceInfoPage = props => {
                             setNewCode(value);
                         }}
                         type={"number"}
-                        placeholder="Input new code here"
+                        placeholder="Input new dealer id here"
                     />
+                </View>
+            </Modal>
+            <Modal
+                title={''}
+                transparent
+                onClose={() => {
+                    setNameModalVisible(false);
+                    setRenameButtonColorStyle({color: FONT_COLOR})
+                }}
+                maskClosable
+                visible={nameModalVisible}
+                footer={nameFooterButtons}
+                style={{
+                    margin: 0,
+                    padding: 0,
+                    borderRadius: 20,
+                }}
+                bodyStyle={styles.modifyCodeModal}>
+                <View style={{}}>
+                    <InputItem
+                        style={{
+                            borderWidth: 1,
+                            borderColor: THEME_GREY,
+                            borderRadius: 10,
+                        }}
+                        maxLength={13}
+                        value={newName}
+                        onChange={value => {
+                            setNewName(value);
+                        }}
+                        placeholder="Input new name here"
+                    />
+                </View>
+            </Modal>
+            <Modal
+                title={''}
+                transparent
+                onClose={() => {
+                    setResetModalVisible(false);
+                    setRestartButtonColorStyle({color: FONT_COLOR})
+                }}
+                maskClosable
+                visible={resetModalVisible}
+                footer={resetFooterButtons}
+                style={{
+                    margin: 0,
+                    padding: 0,
+                    borderRadius: 20,
+                }}
+                bodyStyle={styles.modifyCodeModal}>
+                <View style={{}}>
+                    <Text>Would you like to reset right now?</Text>
+                </View>
+            </Modal>
+            <Modal
+                title={''}
+                transparent
+                onClose={() => {
+                    setShutdownModalVisible(false);
+                    setOffButtonColorStyle({color: FONT_COLOR})
+                }}
+                maskClosable
+                visible={shutdownModalVisible}
+                footer={shutdownFooterButtons}
+                style={{
+                    margin: 0,
+                    padding: 0,
+                    borderRadius: 20,
+                }}
+                bodyStyle={styles.modifyCodeModal}>
+                <View style={{}}>
+                    <Text>Would you like to shut down right now?</Text>
                 </View>
             </Modal>
             <View style={styles.top_view1}>
@@ -401,14 +484,12 @@ export const DeviceInfoPage = props => {
                             justifyContent: 'center',
                         }}>
                             <View style={styles.label_view}>
-                                <Text style={[styles.version_text, {}]}>Dealer ID</Text>
-                                <Text style={styles.version_text}>Charging Status</Text>
-                                <Text style={styles.version_text}>Mac</Text>
+                                <Text style={[styles.version_text, {}]}>Dealer ID:</Text>
+                                <Text style={styles.version_text}>Charging Status:</Text>
                             </View>
                             <View style={styles.value_view}>
                                 <Text style={[styles.version_text, {}]}>{currentCode}</Text>
                                 <Text style={styles.version_text}>{chargingStatus}</Text>
-                                <Text style={styles.version_text}>{currentPhoneMac}</Text>
                             </View>
                         </View>
                         <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
@@ -445,7 +526,7 @@ export const DeviceInfoPage = props => {
                             }}
                             style={styles.button_search}
                             activeOpacity={1}>
-                            <Text style={[styles.button_text, codeButtonColorStyle]}>Code</Text>
+                            <Text style={[styles.button_text, codeButtonColorStyle]}>DealerID</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => {
@@ -453,15 +534,7 @@ export const DeviceInfoPage = props => {
                             }}
                             style={styles.button_search}
                             activeOpacity={1}>
-                            <Text style={[styles.button_text,restartButtonColorStyle]}>Restart</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => {
-                                _shutdownPress();
-                            }}
-                            style={styles.button_search}
-                            activeOpacity={1}>
-                            <Text style={[styles.button_text,offButtonColorStyle]}>Off</Text>
+                            <Text style={[styles.button_text, restartButtonColorStyle]}>Reset</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.button_right}>
@@ -471,22 +544,22 @@ export const DeviceInfoPage = props => {
                             }}
                             style={styles.button_search}
                             activeOpacity={1}>
-                            <Text style={[styles.button_text,renameButtonColorStyle]}>Rename</Text>
+                            <Text style={[styles.button_text, renameButtonColorStyle]}>Rename</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => {
-                                _clearMac();
+                                _shutdownPress();
                             }}
                             style={styles.button_search}
                             activeOpacity={1}>
-                            <Text style={[styles.button_text,clearButtonColorStyle]}>
-                                Clear Mac
-                            </Text>
+                            <Text style={[styles.button_text, offButtonColorStyle]}>ShutDown</Text>
                         </TouchableOpacity>
-                        <BTUpgradeDFU mac={currentMac} name={currentName} preCall={() => {
-                            _dealWithDisconnected()
-                        }}></BTUpgradeDFU>
                     </View>
+                </View>
+                <View style={styles.button_view}>
+                    <BTUpgradeDFU mac={currentMac} version={softwareVersion} name={currentName} preCall={() => {
+                        _dealWithDisconnected()
+                    }}></BTUpgradeDFU>
                 </View>
             </View>
         </View>);
@@ -516,7 +589,7 @@ const styles = StyleSheet.create({
     },
     button_text: {
         height: 40,
-        fontSize: 30,
+        fontSize: 25,
         color: FONT_COLOR,
         margin: 8,
         textAlignVertical: 'center',
@@ -568,8 +641,10 @@ const styles = StyleSheet.create({
     },
     label_view: {
         paddingTop: 10,
-        flex: 1,
-        alignItems: 'flex-end'
+        flex: 3.2,
+        alignItems: 'flex-end',
+        // borderWidth:1,
+        // borderColor:'red'
     },
     version_text: {
         height: 40,
@@ -581,7 +656,7 @@ const styles = StyleSheet.create({
             android: {},
         }),
     },
-    value_view: {paddingTop: 10, flex: 2.5, alignItems: 'flex-start'},
+    value_view: {paddingTop: 10, flex: 1.8, alignItems: 'center'},
     right_view: {
         flex: 2.2,
         alignItems: 'center',
@@ -608,11 +683,13 @@ const styles = StyleSheet.create({
         }),
     },
     button_view: {
-        flex: 2,
+        flex: 1,
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: 10,
+        // marginTop: 10,
         alignItems: 'center',
+        // borderWidth:1,
+        // borderColor:'red'
     },
     button_left: {
         justifyContent: 'center',

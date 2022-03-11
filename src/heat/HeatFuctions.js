@@ -220,10 +220,6 @@ export const openUpgrade = (mac, callback) => {
     );
 };
 
-export const writePhoneMacToDevice = (mac, phoneMacArray, callback) => {
-    return _sendCommandToLock(mac, 0x10, phoneMacArray, callback, true);
-};
-
 const _sendCommandToLock = async (
     mac,
     cmd,

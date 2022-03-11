@@ -1,8 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {DFUEmitter, NordicDFU} from 'react-native-nordic-dfu';
-import {downUpgradeFile} from '../../utils/common';
-import {latestFirmWareUrl} from '../../business/Core';
+import {downUpgradeFile} from '../../utils/HttpUtils';
 import {isConnected, openUpgrade, scanAllDevice, stopScan} from '../../heat/HeatFuctions';
 import {log_info} from '../../utils/LogUtils';
 import {Modal} from '@ant-design/react-native';
@@ -14,11 +13,11 @@ import {UpgradeFailed, YouNeedToConnectDeviceNotification} from '../../business/
 import {log_error} from "../../bluetooth/BTLogUtils";
 import {store} from "../../bluetooth/redux/BTStore";
 import {setNearbyDFU} from "../../bluetooth/redux/BTActions";
-import {string} from "prop-types";
 
 export const BTUpgradeDFU = props => {
     const currentMac = props.mac;
     const currentName = props.name;
+    const currentVersion = props.version;
 
     const [progress, setProgress] = useState(0);
     const [progressModalVisible, setProgressModalVisible] = useState(false);
@@ -118,10 +117,14 @@ export const BTUpgradeDFU = props => {
             return;
         }
         log_info("upgrade 001 "+currentMac);
-        setProgressModalVisible(true);
-        setUpgradeButtonColorStyle({color: POWER_OFF_COLOR});
-        downUpgradeFile(latestFirmWareUrl, filePath => {
+        let version = currentVersion;
+        if(version&&version[0]=='V'){
+            version = currentVersion.substring(1);
+        }
+        downUpgradeFile(version, filePath => {
             log_info("upgrade 002 ")
+            setProgressModalVisible(true);
+            setUpgradeButtonColorStyle({color: POWER_OFF_COLOR});
             openUpgrade(currentMac);
             props.preCall();
             log_info('upgrade 003 ');
@@ -175,17 +178,18 @@ export const BTUpgradeDFU = props => {
 
 const styles = StyleSheet.create({
     button_upgrade: {
-        margin: 10,
+        // margin: 10,
         width: DEVICE_WIDTH / 2 - 50,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: THEME_GREY,
         height: 50,
         borderRadius: 10,
+
     },
     button_text: {
         height: 40,
-        fontSize: 30,
+        fontSize: 25,
         color: FONT_COLOR,
         margin: 8,
         textAlignVertical: 'center',

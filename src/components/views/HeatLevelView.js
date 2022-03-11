@@ -148,6 +148,7 @@ export default class HeatLevelView extends Component {
                         style={{
                             alignItems: 'center',
                             justifyContent: 'center',
+                            width: 70,
                         }}
                         activeOpacity={1}>
                         <Image
