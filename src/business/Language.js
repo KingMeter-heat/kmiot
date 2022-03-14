@@ -15,5 +15,8 @@ export const UpgradeFailed = 'upgrade this device failed,please try again.';
 export const Http401 = "You don't have this permission"
 export const HttpTimeOut = "request timeout"
 
-export const NoNeedUpgrade = 'The version of this hardware is the latest!';
+export const NoNeedUpgradeFirmware = 'The version of this hardware is the latest!';
+export const NoNeedUpgradeApp = 'The version of this App is the latest!';
+
+export const upgradingAppNow = 'It is downing app at backend now';
 

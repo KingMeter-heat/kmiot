@@ -1,6 +1,6 @@
 import {api_url_prefix, firmwareVersionUrl} from "../business/Core";
 import {notify} from "../components/notify/notify";
-import {Http401, NoNeedUpgrade} from "../business/Language";
+import {Http401, NoNeedUpgradeFirmware} from "../business/Language";
 import {log_error, log_info} from "./LogUtils";
 import RNFS from "react-native-fs";
 
@@ -125,7 +125,7 @@ function validateVersion(currentVersion, callback) {
             fileUrl,
         );
         if (version == currentVersion) {
-            notify(NoNeedUpgrade);
+            notify(NoNeedUpgradeFirmware);
         } else {
             callback(filename, fileUrl);
         }
@@ -143,46 +143,48 @@ const fileExist = (filepath, callback) => {
         });
 };
 
-const downLoadFile = (downloadDest, fileUrl, succeed) => {
-    const options = {
-        fromUrl: fileUrl,
-        toFile: downloadDest,
-        background: true,
-        begin: res => {
-            // console.log('begin', res);
-            // console.log('contentLength:', res.contentLength / 1024 / 1024, 'M');
-        },
-        progress: res => {
-            let pro = res.bytesWritten / res.contentLength;
-        },
-    };
-    try {
-        const ret = RNFS.downloadFile(options);
-        ret.promise
-            .then(res => {
-                if (res.statusCode === 200) {
-                    succeed(downloadDest);
-                }
-            })
-            .catch(err => {
-                console.log('err', err);
-            });
-    } catch (e) {
-        console.log(error);
-    }
+export const downLoadFile = (filename, fileUrl, succeed ,process=(percent)=>{}) => {
+    const downloadDest =
+        RNFS.DocumentDirectoryPath + `/` + filename;
+    fileExist(downloadDest, exist => {
+        if (exist) {
+            succeed(downloadDest);
+        } else {
+            const options = {
+                fromUrl: fileUrl,
+                toFile: downloadDest,
+                background: true,
+                begin: res => {
+                    // console.log('begin', res);
+                    // console.log('contentLength:', res.contentLength / 1024 / 1024, 'M');
+                },
+                progress: res => {
+                    let pro = String((res.bytesWritten / res.contentLength)*100);
+                    pro = pro.substring(0,pro.indexOf("."));
+                    process(pro)
+                },
+            };
+            try {
+                const ret = RNFS.downloadFile(options);
+                ret.promise
+                    .then(res => {
+                        if (res.statusCode === 200) {
+                            succeed(downloadDest);
+                        }
+                    })
+                    .catch(err => {
+                        console.log('err', err);
+                    });
+            } catch (e) {
+                console.log(e);
+            }
+        }
+    })
 }
 
-export const downUpgradeFile = (currentVersion, succeed) => {
+export const downFirmwareFile = (currentVersion, succeed) => {
     validateVersion(currentVersion, (filename, fileUrl) => {
-        const downloadDest =
-            RNFS.DocumentDirectoryPath + `/` + filename;
-        fileExist(downloadDest, exist => {
-            if (exist) {
-                succeed(downloadDest);
-            } else {
-                downLoadFile(downloadDest, fileUrl, succeed);
-            }
-        })
+        downLoadFile(filename,fileUrl,succeed);
     })
 }
 

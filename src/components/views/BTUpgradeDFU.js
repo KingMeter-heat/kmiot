@@ -1,7 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {DFUEmitter, NordicDFU} from 'react-native-nordic-dfu';
-import {downUpgradeFile} from '../../utils/HttpUtils';
+import {downFirmwareFile} from '../../utils/HttpUtils';
 import {isConnected, openUpgrade, scanAllDevice, stopScan} from '../../heat/HeatFuctions';
 import {log_info} from '../../utils/LogUtils';
 import {Modal} from '@ant-design/react-native';
@@ -112,6 +112,10 @@ export const BTUpgradeDFU = props => {
     };
 
     const _upgradeFirmware = () => {
+        if(progress!=0){
+            setProgressModalVisible(true);
+            return;
+        }
         if (!isConnected(currentMac)) {
             notify(YouNeedToConnectDeviceNotification);
             return;
@@ -121,7 +125,7 @@ export const BTUpgradeDFU = props => {
         if(version&&version[0]=='V'){
             version = currentVersion.substring(1);
         }
-        downUpgradeFile(version, filePath => {
+        downFirmwareFile(version, (filePath) => {
             log_info("upgrade 002 ")
             setProgressModalVisible(true);
             setUpgradeButtonColorStyle({color: POWER_OFF_COLOR});
