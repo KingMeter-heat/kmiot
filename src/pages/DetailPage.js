@@ -10,6 +10,7 @@ export default class DetailPage extends Component {
         this.item = this.props.navigation.getParam('item');
     }
 
+
     render() {
         return (
             <Provider>

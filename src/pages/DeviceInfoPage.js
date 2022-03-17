@@ -1,4 +1,4 @@
-import {Animated, Image, StyleSheet, Text, TouchableOpacity, View,} from 'react-native';
+import {Image, StyleSheet, Text, TouchableOpacity, View,} from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {
     connect,
@@ -19,10 +19,9 @@ import {YouCanOnlyInputNumber, YouNeedToConnectDeviceNotification} from "../busi
 import {BTUpgradeDFU} from "../components/views/BTUpgradeDFU";
 import {Modal, Switch} from '@ant-design/react-native';
 import InputItem from '@ant-design/react-native/es/input-item';
-// import {request} from "../utils/http";
 import HeatLevelView from "../components/views/HeatLevelView";
 import {store} from "../bluetooth/redux/BTStore";
-import {setNearbyDeviceMap, setPeripheralMap2} from "../bluetooth/redux/BTActions";
+import {setPeripheralMap2} from "../bluetooth/redux/BTActions";
 import {DEVICE_TYPE} from "../device/DeviceType";
 
 const SIZE = 40;

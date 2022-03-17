@@ -20,3 +20,5 @@ export const NoNeedUpgradeApp = 'The version of this App is the latest!';
 
 export const upgradingAppNow = 'It is downing app at backend now';
 
+export const NameOverLength = 'the length of name over length than 13';
+

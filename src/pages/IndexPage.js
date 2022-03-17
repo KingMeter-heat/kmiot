@@ -5,12 +5,19 @@ import {FlatList} from 'react-native-gesture-handler';
 import {FONT_COLOR, THEME_BACKEND, THEME_LIST_BACKEND,} from '../components/constant/Color';
 import {DEVICE_WIDTH} from '../components/constant/Size';
 import Provider from '@ant-design/react-native/lib/provider';
-import {connect, forceRefreshNearbyDeviceMap, queryLockInfo, scanAllDevice, shutDown,} from '../heat/HeatFuctions';
+import {
+    connect,
+    forceRefreshNearbyDeviceMap,
+    queryLockInfo,
+    removeAllListener,
+    scanAllDevice,
+    shutDown,
+} from '../heat/HeatFuctions';
 import {notify} from '../components/notify/notify';
 import {log_info} from '../utils/LogUtils';
 import ActionButton from 'react-native-action-button';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {useDispatch, useSelector} from 'react-redux'
+import {useSelector} from 'react-redux'
 import {store} from "../bluetooth/redux/BTStore";
 import {DEVICE_TYPE} from "../device/DeviceType";
 import {downLoadFile, get} from "../utils/HttpUtils";
@@ -74,6 +81,7 @@ export const IndexPageView = props => {
         }, 2000);
         return () => {
             clearInterval(currentTimer.current);
+            removeAllListener();
         }
     }, []);
 
@@ -258,7 +266,7 @@ export const IndexPageView = props => {
                             refreshing={refreshingFlag}
                             onRefresh={() => {
                                 setRefreshingFlag(true);
-                                log_info("刷新~~~~~~~")
+                                log_info("刷新~~~~~~~");
                                 forceRefreshNearbyDeviceMap();
                                 getMoreData();
                                 setTimeout(() => {

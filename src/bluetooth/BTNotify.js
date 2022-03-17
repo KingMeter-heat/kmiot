@@ -6,13 +6,11 @@ import {
 } from '../device/DeviceNotify';
 import {store} from "./redux/BTStore";
 import {setNearbyDFU} from "./redux/BTActions";
-import {log_info} from "./BTLogUtils";
 
 export const device_discover_notify = peripheral => {
     if (peripheral.name == null) {
         return;
     }
-    // log_info("discover ---------> "+peripheral.name)
     if (
         String(peripheral.name) === 'KM-DFU' ||
         (String(peripheral.name).startsWith('K', 0) &&
