@@ -11,7 +11,7 @@ import {
     queryLockInfo,
     removeAllListener,
     scanAllDevice,
-    shutDown,
+    shutDown, startBle,
 } from '../heat/HeatFuctions';
 import {notify} from '../components/notify/notify';
 import {log_info} from '../utils/LogUtils';
@@ -22,10 +22,10 @@ import {store} from "../bluetooth/redux/BTStore";
 import {DEVICE_TYPE} from "../device/DeviceType";
 import {downLoadFile, get} from "../utils/HttpUtils";
 import {appVersion, appVersionUrl} from "../business/Core";
-import RNFetchBlob from 'rn-fetch-blob';
 import {NoNeedUpgradeApp, upgradingAppNow} from "../business/Language";
 import Progress from "@ant-design/react-native/es/progress";
 import {Modal} from "@ant-design/react-native";
+import ApkInstaller from "react-native-apk-installer";
 
 
 const SIZE = 40;
@@ -39,9 +39,15 @@ const Item = ({item, onPress, style}) => (
 );
 
 export default class IndexPage extends Component {
+
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        log_info("error is "+JSON.stringify(error))
+    }
+
     constructor(props) {
         super(props);
         this.navigation = this.props.navigation;
+        startBle();
     }
 
     render() {
@@ -195,13 +201,10 @@ export const IndexPageView = props => {
             notify(upgradingAppNow);
             setProgressModalVisible(true);
             downLoadFile(appName, appUrl, (filePath) => {
-                log_info("download okay" + filePath)
+                log_info("download okay 1" + filePath)
                 setProgressModalVisible(false);
                 setProgress(0);
-                RNFetchBlob.android.actionViewIntent(
-                    filePath,
-                    'application/vnd.android.package-archive'
-                );
+                ApkInstaller.install(filePath);
             },_process);
         } else {
             notify(NoNeedUpgradeApp)

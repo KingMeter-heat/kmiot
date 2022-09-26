@@ -5,6 +5,7 @@ import {YouNeedToConnectDeviceNotification} from '../../business/Language';
 import React, {Component} from 'react';
 import {FONT_COLOR, THEME_BACKEND, THEME_GREY} from '../constant/Color';
 import {log_info} from '../../utils/LogUtils';
+import HeatSwitch from "../heat_switch/switch";
 
 export default class HeatLevelView extends Component {
     constructor(props) {
@@ -151,10 +152,11 @@ export default class HeatLevelView extends Component {
                             width: 70,
                         }}
                         activeOpacity={1}>
-                        <Image
-                            style={styles.fire_image}
-                            source={this.state.heatOnOffImage ? require('../../images/fire_on.png') : require('../../images/fire_off.png')}
-                        />
+                        {/*<Image*/}
+                        {/*    style={styles.fire_image}*/}
+                        {/*    source={this.state.heatOnOffImage ? require('../../images/fire_on.png') : require('../../images/fire_off.png')}*/}
+                        {/*/>*/}
+                        <HeatSwitch heat_switch={this.state.heatOnOffImage}></HeatSwitch>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => {

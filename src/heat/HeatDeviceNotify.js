@@ -2,14 +2,7 @@ import {Byte2Mac, Bytes2HexString, Bytes2Int, Bytes2Str} from '../bluetooth/BTDa
 import DeviceInfo from './HeatCache';
 import {log_info} from '../bluetooth/BTLogUtils';
 import {store} from "../bluetooth/redux/BTStore";
-import {
-    setCountMap2,
-    setDeviceInfoMap,
-    setNearbyDeviceMap,
-    setPeripheralMap2,
-    setResMap2
-} from "../bluetooth/redux/BTActions";
-import {DEVICE_TYPE} from "../device/DeviceType";
+import {setCountMap2, setDeviceInfoMap, setNearbyDeviceMap, setResMap2} from "../bluetooth/redux/BTActions";
 
 const CODE_DEVICE_INFO = 'C981';
 const CODE_SHUT_DOWN = 'C982';
@@ -41,7 +34,7 @@ export const heat_discover_notify = async (
         data[8],
     ]);
     let id = peripheral.id;
-    let name = peripheral.name;
+    let name = String(peripheral.name).trim();
 
     let deviceInfoMap = store.getState().deviceInfoMap;
     let info = new DeviceInfo();
@@ -70,7 +63,6 @@ export const heat_discover_notify = async (
         newMap.set(id, {
             id: id,
             title: name,
-            bond: phoneMacFromDevice === ""
         });
         store.dispatch(setNearbyDeviceMap(newMap));
     }
@@ -206,6 +198,8 @@ const deviceInfoNotify = (id, res) => {
         phoneMacFromDevice,
         battery_capacity,
     );
+
+    log_info("get info from device : "+JSON.stringify(info))
 
     let deviceInfoMap = store.getState().deviceInfoMap;
     deviceInfoMap.set(id, info);

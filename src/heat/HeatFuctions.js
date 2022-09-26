@@ -7,29 +7,21 @@ import {
     openBlueTooth,
     removeListener,
     scanPeripheral,
-    sendMessageToHardware,
+    sendMessageToHardware, startBleManager,
     stopScanAll,
 } from '../bluetooth/BTUtils';
 import {asciiStr2intArray, Str2BytesPer2} from '../bluetooth/BTDataUtils';
 import {getEncryptData} from '../bluetooth/EncryptUtil';
 import {log_info} from '../utils/LogUtils';
 import {notify} from "../components/notify/notify";
-import {YouNeedToTurnOnBluetooth} from "../business/Language";
+import {NameOverLength, YouNeedToTurnOnBluetooth} from "../business/Language";
 import {store} from "../bluetooth/redux/BTStore";
 import {setListeningFlag, setNearbyDeviceMap, setScanningFlag} from "../bluetooth/redux/BTActions";
 
-// export const getDeviceNearby = () => {
-//     let result = [];
-//     nearbyDeviceMap.forEach((info, id) => {
-//         result.push({
-//             id: id, //mac
-//             title: info.title,
-//             bond: info.bond,
-//         });
-//     });
-//     return result;
-// }
 
+export const startBle = ()=>{
+    startBleManager();
+}
 
 export const forceRefreshNearbyDeviceMap = () => {
     let tmpMap = store.getState().nearbyDeviceMap;
@@ -48,20 +40,13 @@ export const forceRefreshNearbyDeviceMap = () => {
 
 export const scanAllDevice = (callback = () => {
 }) => {
-    // log_info("scanningFlag is "+scanningMap.get("flag"))
-    // if (!scanningMap.get("flag")) {
-    //     // log_info("scanAllDevice now ")
-    //     scanningMap.set("flag",true);
-    //     // log_info(scanningMap.get("flag"))
-    //     scanPeripheral(callback);
-    // }
     checkBlueToothPermission(
         () => {
             checkBlueToothStateAndOpen(
                 () => {
                     // nearbyDeviceMap.clear();
-                    _addListenerBeforeScan();
                     if (!store.getState().scanningFlag) {
+                        _addListenerBeforeScan();
                         store.dispatch(setScanningFlag(true));
                         scanPeripheral(callback);
                     }
@@ -75,18 +60,6 @@ export const scanAllDevice = (callback = () => {
             notify(YouNeedToTurnOnBluetooth);
         },
     );
-};
-
-export const scanAllDeviceForce = (callback = () => {
-}) => {
-    log_info("scanAllDeviceForce2 now ")
-    // scanningMap.set("flag",true);
-    // // log_info(scanningMap.get("flag"))
-    // scanPeripheral(callback);
-    if (!store.getState().scanningFlag) {
-        store.dispatch(setScanningFlag(true));
-        scanPeripheral(callback);
-    }
 };
 
 export const stopScan = (callback = () => {
@@ -106,15 +79,11 @@ export const removeAllListener = () => {
 export const connect = (mac, name,device_type, success = () => {
 }, error = (error_message) => {
 },) => {
-    // if (!listenerExistFlagMap.get("flag")) {
-    //     listenerExistFlagMap.set("flag",true);
-    // }
     connectDevice(mac, name,device_type, success, error);
 };
 export const disConnect = mac => {
     disconnectDevice(mac);
 };
-
 
 export const isThisShoeNearby = (mac, existCallback, notExistCallback) => {
     isThisDeviceNearby(mac, existCallback, notExistCallback);
@@ -133,8 +102,6 @@ const _addListenerBeforeScan = () => {
         log_info("addListenerBeforeScan now")
         addListener();
         store.dispatch(setListeningFlag(true));
-        // listenerExistFlagMap.set("flag",true);
-        // setListenerFlag(true);
     }
 };
 
@@ -164,8 +131,8 @@ export const queryLockInfo = async mac => {
         log_info('********read device info failed ----------02--');
         return false;
     }
-    // log_info("queryLockInfo-->" + JSON.stringify(peripheral));
     let res = store.getState().resMap.get(mac);
+    log_info("query info ")
     await sendMessageToHardware(
         mac,
         res.writeWithResponseServiceUUID[0],
@@ -188,9 +155,6 @@ export const setHeatGear = (mac, gear, callback = () => {
 
 export const shutDown = (mac, callback = () => {
 }, name) => {
-    // if (nearbyDeviceMap.has(mac)) {
-    //     nearbyDeviceMap.delete(mac);
-    // }
     if (store.getState().nearbyDeviceMap.has(mac)) {
         let newMap = store.getState().nearbyDeviceMap;
         newMap.delete(mac);
@@ -202,11 +166,28 @@ export const shutDown = (mac, callback = () => {
 export const restart = (mac, callback) => {
     return _sendCommandToLock(mac, 0xfe, [0xe6, 0x05, 0x0a, 0x09], callback, true);
 };
-export const rename = (mac, name, callback) => {
-    return _sendCommandToLock(mac, 0x44, asciiStr2intArray(name), callback, true);
+export const rename = (mac, name, success, error) => {
+    name = String(name).trim();
+    let nameArray = asciiStr2intArray(name);
+    let nameArrayLength = nameArray.length;
+    if(nameArrayLength>13){
+        notify(NameOverLength)
+        return;
+    }else if(nameArrayLength<13){
+        for (let i=0;i<13-nameArrayLength;i++){
+            nameArray.push(0x20);
+        }
+    }
+    let newMap = store.getState().nearbyDeviceMap;
+    newMap.set(mac, {
+        id: mac,
+        title: name,
+    });
+    store.dispatch(setNearbyDeviceMap(newMap));
+
+    return _sendCommandToLock(mac, 0x44, nameArray, success, true);
 };
 export const modifyCustomerId = (mac, customerId, callback) => {
-
     return _sendCommandToLock(mac, 0x45, Str2BytesPer2(customerId), callback, true);
 };
 
@@ -240,7 +221,7 @@ const _sendCommandToLock = async (
     let customerId = res.customerId;
     let bytes = getEncryptData(customerId, counter, mac, cmd, dataArray);
 
-    log_info('send command to lock,data is ', customerId + "@" + cmd + "@" + counter + "@" + dataArray + "@" + bytes);
+    log_info('send command to lock,customerId:', customerId + ", cmd:" + cmd + ", counter:" + counter + ", bytes:" + bytes);
 
     if (bytes == null) {
         return false;
@@ -264,31 +245,5 @@ const _sendCommandToLock = async (
 };
 
 export const validateEncrypt = mac => {
-    // log('******** encrypt validate ----------01');
-    // let peripheral = validateBeforeAction(mac);
-    // if (!peripheral) {
-    //     log('********encrypt validate failed ----------02-');
-    //     return false;
-    // }
-    // let counter = counterMap.get(mac);
-    // let res = resMap.get(mac);
-    // let customerId = res.customerId;
-    // let data = getEncrypt(customerId, counter, mac, 0x06);
-    // if (data === null) {
-    //     log(
-    //         '********encrypt validate failed ----------03--',
-    //         mac,
-    //         counter,
-    //     );
-    //     return false;
-    // }
-    // let dataStr = Bytes2Str(data) + '3030303030303030';
-    //
-    // sendMessageToHardware(
-    //     mac,
-    //     res.nofityServiceUUID[0],
-    //     res.writeWithResponseCharacteristicUUID[0],
-    //     Str2Bytes(dataStr),
-    // );
     return _sendCommandToLock(mac, 0x06, [], false);
 };

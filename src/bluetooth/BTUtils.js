@@ -78,7 +78,6 @@ function listener_disconnected(data) {
 
 function listener_info_upload(data, peripheralID, characteristic, service) {
     // log_info("listener_info_upload_1_",peripheralMap.toString())
-    // log_info("listener_info_upload_2_",data.peripheral)
     let id = data.peripheral;
     if(!store.getState().peripheralMap.has(id)){
         return null;
@@ -86,6 +85,7 @@ function listener_info_upload(data, peripheralID, characteristic, service) {
     // if (!peripheralMap.has(data.peripheral)) {
     //     return null;
     // }
+
     device_upload_notify(id, data.value);
 }
 
@@ -95,7 +95,7 @@ function listener_scan_stopped() {
     store.dispatch(setScanningFlag(false));
 }
 
-export const addListener = () => {
+export const startBleManager = () =>{
     BleManager.start({showAlert: false})
         .then(() => {
             BleManager.checkState();
@@ -104,6 +104,9 @@ export const addListener = () => {
         .catch(error => {
             log_info('******** start ble manager failed ********');
         });
+}
+
+export const addListener = () => {
     bleManagerEmitter.addListener(
         'BleManagerDiscoverPeripheral',
         listener_discover_device,

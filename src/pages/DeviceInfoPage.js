@@ -63,7 +63,7 @@ export const DeviceInfoPage = props => {
     const currentUpdateInfoTimer = useRef();
 
     const _gotoIndexPage = () => {
-        navigation.navigate('IndexPage', {refresh: Math.random()});
+        navigation.navigate('IndexPage');
     };
 
     useEffect(() => {
@@ -103,14 +103,13 @@ export const DeviceInfoPage = props => {
 
     const _dealWithConnected = () => {
         currentUpdateInfoTimer.current = setInterval(() => {
-            // log_info("isConnected " + isConnected(currentMac))
             if (!isConnected(currentMac)) {
                 log_info("device not connected");
                 _dealWithDisconnected();
             } else {
+                log_info("device connected");
                 queryLockInfo(currentMac);
                 let deviceInfoMap = store.getState().deviceInfoMap;
-                // log_info(info.toString())
                 if (deviceInfoMap != undefined && deviceInfoMap.has(currentMac)) {
                     _showDeviceInfo(deviceInfoMap.get(currentMac));
                 }
