@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import Provider from "@ant-design/react-native/lib/provider";
-import {DeviceInfoPage} from "./DeviceInfoPage";
+import {LockInfoPage} from "./LockInfoPage";
 
 
-export default class DetailPage extends Component {
+export default class LockDetailPage extends Component {
     constructor(props) {
         super(props);
         this.navigation = this.props.navigation;
@@ -14,7 +14,7 @@ export default class DetailPage extends Component {
     render() {
         return (
             <Provider>
-                <DeviceInfoPage
+                <LockInfoPage
                     navigation={this.navigation}
                     item={this.item}
                 />

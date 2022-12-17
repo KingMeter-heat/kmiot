@@ -1,8 +1,8 @@
-import {Byte2Mac, Bytes2HexString, Bytes2Int, Bytes2Str} from '../bluetooth/BTDataUtils';
-import DeviceInfo from './HeatCache';
-import {log_info} from '../bluetooth/BTLogUtils';
-import {store} from "../bluetooth/redux/BTStore";
-import {setCountMap2, setDeviceInfoMap, setNearbyDeviceMap, setResMap2} from "../bluetooth/redux/BTActions";
+import {Byte2Mac, Bytes2HexString, Bytes2Int, Bytes2Str} from '../../bluetooth/BTDataUtils';
+import HeatDeviceInfo from './HeatCache';
+import {log_info} from '../../bluetooth/BTLogUtils';
+import {store} from "../../bluetooth/redux/BTStore";
+import {setCountMap2, setDeviceInfoMap, setNearbyDeviceMap, setResMap2} from "../../bluetooth/redux/BTActions";
 
 const CODE_DEVICE_INFO = 'C981';
 const CODE_SHUT_DOWN = 'C982';
@@ -37,7 +37,7 @@ export const heat_discover_notify = async (
     let name = String(peripheral.name).trim();
 
     let deviceInfoMap = store.getState().deviceInfoMap;
-    let info = new DeviceInfo();
+    let info = new HeatDeviceInfo();
     if (deviceInfoMap.has(id)) {
         info = deviceInfoMap.get(id);
     }
@@ -186,7 +186,7 @@ const deviceInfoNotify = (id, res) => {
         name = newMap.get(id).name;
     }
 
-    let info = new DeviceInfo(
+    let info = new HeatDeviceInfo(
         id,
         name,
         software_version,
@@ -199,7 +199,7 @@ const deviceInfoNotify = (id, res) => {
         battery_capacity,
     );
 
-    log_info("get info from device : "+JSON.stringify(info))
+    log_info("get info from heat shoe : "+JSON.stringify(info))
 
     let deviceInfoMap = store.getState().deviceInfoMap;
     deviceInfoMap.set(id, info);

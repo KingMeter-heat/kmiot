@@ -2,7 +2,7 @@ import React, {useRef, useState} from 'react';
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {DFUEmitter, NordicDFU} from 'react-native-nordic-dfu';
 import {downFirmwareFile} from '../../utils/HttpUtils';
-import {isConnected, openUpgrade, scanAllDevice, stopScan} from '../../heat/HeatFuctions';
+import {isConnected, openUpgrade, scanAllDevice, stopScan} from '../../device/heat/HeatFuctions';
 import {log_info} from '../../utils/LogUtils';
 import {Modal} from '@ant-design/react-native';
 import Progress from '@ant-design/react-native/es/progress';

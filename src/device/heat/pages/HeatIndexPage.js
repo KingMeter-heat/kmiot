@@ -1,28 +1,32 @@
 import React, {Component, useEffect, useRef, useState} from 'react';
 import {Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import headerImg from '../images/index_header.png';
+import headerImg from '../../../images/index_header.png';
 import {FlatList} from 'react-native-gesture-handler';
-import {FONT_COLOR, THEME_BACKEND, THEME_LIST_BACKEND,} from '../components/constant/Color';
-import {DEVICE_WIDTH} from '../components/constant/Size';
+import {FONT_COLOR, THEME_BACKEND, THEME_LIST_BACKEND,} from '../../../components/constant/Color';
+import {DEVICE_WIDTH} from '../../../components/constant/Size';
 import Provider from '@ant-design/react-native/lib/provider';
+import {
+    queryHeatShoeInfo,
+    shutDown,
+} from '../HeatFuctions';
+
 import {
     connect,
     forceRefreshNearbyDeviceMap,
-    queryLockInfo,
     removeAllListener,
     scanAllDevice,
-    shutDown, startBle,
-} from '../heat/HeatFuctions';
-import {notify} from '../components/notify/notify';
-import {log_info} from '../utils/LogUtils';
+    startBle,
+} from '../../DeviceFunctions';
+import {notify} from '../../../components/notify/notify';
+import {log_info} from '../../../utils/LogUtils';
 import ActionButton from 'react-native-action-button';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useSelector} from 'react-redux'
-import {store} from "../bluetooth/redux/BTStore";
-import {DEVICE_TYPE} from "../device/DeviceType";
-import {downLoadFile, get} from "../utils/HttpUtils";
-import {appVersion, appVersionUrl} from "../business/Core";
-import {NoNeedUpgradeApp, upgradingAppNow} from "../business/Language";
+import {store} from "../../../bluetooth/redux/BTStore";
+import {DEVICE_TYPE} from "../../DeviceType";
+import {downLoadFile, get} from "../../../utils/HttpUtils";
+import {appVersion, appVersionUrl} from "../../../business/Core";
+import {NoNeedUpgradeApp, upgradingAppNow} from "../../../business/Language";
 import Progress from "@ant-design/react-native/es/progress";
 import {Modal} from "@ant-design/react-native";
 import ApkInstaller from "react-native-apk-installer";
@@ -38,7 +42,7 @@ const Item = ({item, onPress, style}) => (
     </TouchableOpacity>
 );
 
-export default class IndexPage extends Component {
+export default class HeatIndexPage extends Component {
 
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
         log_info("error is "+JSON.stringify(error))
@@ -155,7 +159,7 @@ export const IndexPageView = props => {
         setTimeout(() => {
             connect(id, name, DEVICE_TYPE.HEAT, () => {
                 setTimeout(() => {
-                    queryLockInfo(id);
+                    queryHeatShoeInfo(id);
                     setTimeout(() => {
                         shutDown(id, () => {
                             _stopOneByOne(deviceList, (index + 1))
@@ -231,7 +235,7 @@ export const IndexPageView = props => {
                     <Image
                         // resizeMode={'stretch'}
                         // resizeMethod={'scale'}
-                        source={require('../images/loading.gif')}
+                        source={require('../../../images/loading.gif')}
                         style={{width: 24, height: 24}}
                     />
                     <Progress percent={progress} barStyle={{}} />

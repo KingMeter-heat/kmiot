@@ -2,11 +2,11 @@
  * storage counter, used for encrypting
  * @Key mac
  * @Value counter
- * @type {Map<any, DeviceInfo>}
+ * @type {Map<any, HeatDeviceInfo>}
  */
 // export const deviceInfoMap = new Map();
 
-export default class DeviceInfo {
+export default class HeatDeviceInfo {
     mac; //device mac address
     name; //device id
     software_version;

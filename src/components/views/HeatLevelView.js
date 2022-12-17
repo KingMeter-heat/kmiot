@@ -1,11 +1,12 @@
 import {Image, StyleSheet, Text, TouchableOpacity, View,Vibration} from 'react-native';
-import {heatOnOffSet, isConnected, setHeatGear} from '../../heat/HeatFuctions';
+import {heatOnOffSet, setHeatGear} from '../../device/heat/HeatFuctions';
 import {notify} from '../notify/notify';
 import {YouNeedToConnectDeviceNotification} from '../../business/Language';
 import React, {Component} from 'react';
 import {FONT_COLOR, THEME_BACKEND, THEME_GREY} from '../constant/Color';
 import {log_info} from '../../utils/LogUtils';
 import HeatSwitch from "../heat_switch/switch";
+import {isConnected} from '../../device/DeviceFunctions';
 
 export default class HeatLevelView extends Component {
     constructor(props) {

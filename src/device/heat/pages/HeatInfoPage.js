@@ -1,34 +1,32 @@
 import {Image, StyleSheet, Text, TouchableOpacity, View,} from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {
-    connect,
-    disConnect,
-    isConnected,
     modifyCustomerId,
-    queryLockInfo,
+    queryHeatShoeInfo,
     rename,
     restart,
     shutDown
-} from "../heat/HeatFuctions";
-import {FONT_COLOR, POWER_OFF_COLOR, THEME_BACKEND, THEME_GREY} from "../components/constant/Color";
-import {DEVICE_WIDTH} from "../components/constant/Size";
-import Battery from "../components/battery";
-import {log_info} from "../utils/LogUtils";
-import {notify} from "../components/notify/notify";
-import {YouCanOnlyInputNumber, YouNeedToConnectDeviceNotification} from "../business/Language";
-import {BTUpgradeDFU} from "../components/views/BTUpgradeDFU";
+} from "../HeatFuctions";
+import {FONT_COLOR, POWER_OFF_COLOR, THEME_BACKEND, THEME_GREY} from "../../../components/constant/Color";
+import {DEVICE_WIDTH} from "../../../components/constant/Size";
+import Battery from "../../../components/battery";
+import {log_info} from "../../../utils/LogUtils";
+import {notify} from "../../../components/notify/notify";
+import {YouCanOnlyInputNumber, YouNeedToConnectDeviceNotification} from "../../../business/Language";
+import {BTUpgradeDFU} from "../../../components/views/BTUpgradeDFU";
 import {Modal, Switch} from '@ant-design/react-native';
 import InputItem from '@ant-design/react-native/es/input-item';
-import HeatLevelView from "../components/views/HeatLevelView";
-import {store} from "../bluetooth/redux/BTStore";
-import {setPeripheralMap2} from "../bluetooth/redux/BTActions";
-import {DEVICE_TYPE} from "../device/DeviceType";
+import HeatLevelView from "../../../components/views/HeatLevelView";
+import {store} from "../../../bluetooth/redux/BTStore";
+import {setPeripheralMap2} from "../../../bluetooth/redux/BTActions";
+import {DEVICE_TYPE} from "../../DeviceType";
+import {disConnect, isConnected,connect} from "../../DeviceFunctions";
 
 const SIZE = 40;
 const TITLE_SIZE = 80;
 
-export const DeviceInfoPage = props => {
-    const returnImg = require('../images/return.png');
+export const HeatInfoPage = props => {
+    const returnImg = require('../../../images/return.png');
 
     const [codeModalVisible, setCodeModalVisible] = useState(false);
     const [nameModalVisible, setNameModalVisible] = useState(false);
@@ -63,7 +61,7 @@ export const DeviceInfoPage = props => {
     const currentUpdateInfoTimer = useRef();
 
     const _gotoIndexPage = () => {
-        navigation.navigate('IndexPage');
+        navigation.navigate('HeatIndexPage');
     };
 
     useEffect(() => {
@@ -108,7 +106,7 @@ export const DeviceInfoPage = props => {
                 _dealWithDisconnected();
             } else {
                 log_info("device connected");
-                queryLockInfo(currentMac);
+                queryHeatShoeInfo(currentMac);
                 let deviceInfoMap = store.getState().deviceInfoMap;
                 if (deviceInfoMap != undefined && deviceInfoMap.has(currentMac)) {
                     _showDeviceInfo(deviceInfoMap.get(currentMac));
@@ -136,8 +134,8 @@ export const DeviceInfoPage = props => {
     }
 
     function ShowPowerImageView(props) {
-        const powerOnImage = require('../images/power_on.png');
-        const powerOffImage = require('../images/power_off.png');
+        const powerOnImage = require('../../../images/power_on.png');
+        const powerOffImage = require('../../../images/power_off.png');
         if (props.show) {
             return <Image
                 // resizeMode={'stretch'}

@@ -135,6 +135,7 @@ export function getEncryptData(customerId, counter, address, cmd, dataArray) {
     bytes.push(intToByte(getUint8(d)));
     bytes.push(intToByte(cmd));
 
+
     // log('data', dataArray);
     // log('bytes1', bytes);
     for (let i = 0; i < dataArray.length; i++) {
