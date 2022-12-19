@@ -1,7 +1,14 @@
 import {Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import React, {Component, useEffect, useRef, useState} from "react";
 import {log_info} from "../../../utils/LogUtils";
-import {forceRefreshNearbyDeviceMap, removeAllListener, scanAllDevice, startBle} from "../../DeviceFunctions";
+import {
+    disConnect,
+    forceRefreshNearbyDeviceMap,
+    isConnected,
+    removeAllListener,
+    scanAllDevice,
+    startBle
+} from "../../DeviceFunctions";
 import Provider from "@ant-design/react-native/lib/provider";
 import {FlatList} from "react-native-gesture-handler";
 import {FONT_COLOR, THEME_BACKEND, THEME_LIST_BACKEND} from "../../../components/constant/Color";
@@ -20,7 +27,7 @@ const Item = ({item, onPress, style}) => (
     </TouchableOpacity>
 );
 
-export default class LockIndexPage extends Component {
+export default class LockHomePage extends Component {
 
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
         log_info("error is " + JSON.stringify(error))
@@ -29,19 +36,21 @@ export default class LockIndexPage extends Component {
     constructor(props) {
         super(props);
         this.navigation = this.props.navigation;
-        startBle();
+
     }
 
     render() {
         return (
             <Provider>
-                <LockIndexPageView navigation={this.navigation}/>
+                <LockHomePageView navigation={this.navigation}/>
             </Provider>
         );
     }
 }
 
-export const LockIndexPageView = props => {
+export const LockHomePageView = props => {
+
+    const returnImg = require('../../../images/return.png');
     const navigation = props.navigation;
     const currentTimer = useRef();
 
@@ -53,7 +62,6 @@ export const LockIndexPageView = props => {
 
     const [progress, setProgress] = useState(0);
     const [progressModalVisible, setProgressModalVisible] = useState(false);
-
 
     useEffect(() => {
         // log_info("index useEffect");
@@ -67,16 +75,15 @@ export const LockIndexPageView = props => {
     }, []);
 
     const getMoreData = () => {
-        // log_info("nearbyDeviceList is "+JSON.stringify(nearbyDeviceList))
+        log_info("now nearbyDeviceList is "+JSON.stringify(nearbyDeviceList))
         // log_info("store "+JSON.stringify(store.getState().nearbyDeviceList))
         scanAllDevice();
-        setTimeout(() => {
-            // setNearbyDeviceList(getDeviceNearby());
-            if (nearbyDeviceList_changed_times === 10000) {
-                nearbyDeviceList_changed_times = 0;
-            }
-            setNearbyDeviceList_changed_times(nearbyDeviceList_changed_times + 1);
-        }, 1000);
+        setRefreshingFlag(false);
+        // setNearbyDeviceList(getDeviceNearby());
+        if (nearbyDeviceList_changed_times === 10000) {
+            nearbyDeviceList_changed_times = 0;
+        }
+        setNearbyDeviceList_changed_times(nearbyDeviceList_changed_times + 1);
     }
 
 
@@ -97,12 +104,27 @@ export const LockIndexPageView = props => {
         navigation.navigate('LockDetailPage', {item: item});
     };
 
+    const _back = () => {
+        clearInterval(currentTimer.current);
+        navigation.navigate('HomePage');
+    };
+
     return (
         <View style={styles.container}>
             <Image
                 resizeMode={'contain'}
                 style={styles.headerImg}
-                source={headerImg}></Image>
+                source={headerImg}>
+            </Image>
+            <View style={{top:10,left:10,position:"absolute"}}>
+                <View style={styles.top_back}>
+                    <TouchableOpacity
+                        onPress={_back}
+                        activeOpacity={1}>
+                        <Image style={styles.image} source={returnImg}/>
+                    </TouchableOpacity>
+                </View>
+            </View>
             <View style={styles.flatView}>
                 <FlatList
                     extraData={nearbyDeviceList_changed_times}
@@ -118,12 +140,9 @@ export const LockIndexPageView = props => {
                             refreshing={refreshingFlag}
                             onRefresh={() => {
                                 setRefreshingFlag(true);
-                                log_info("刷新~~~~~~~");
                                 forceRefreshNearbyDeviceMap();
                                 getMoreData();
-                                setTimeout(() => {
-                                    setRefreshingFlag(false);
-                                }, 500);
+
                             }}
                         />
                     }
@@ -131,7 +150,6 @@ export const LockIndexPageView = props => {
             </View>
         </View>);
 }
-
 
 const styles = StyleSheet.create({
     container: {

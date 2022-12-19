@@ -13,7 +13,6 @@ export const querySmartLockInfo = async mac => {
         return false;
     }
     let res = store.getState().resMap.get(mac);
-    log_info("query info data is "+Str2BytesPer2('C9A5E738690101'))
     await sendMessageToHardware(
         mac,
         res.writeWithResponseServiceUUID[0],

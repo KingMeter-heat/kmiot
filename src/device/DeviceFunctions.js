@@ -41,8 +41,13 @@ export const scanAllDevice = (callback = () => {
             checkBlueToothStateAndOpen(
                 () => {
                     // nearbyDeviceMap.clear();
-                    if (!store.getState().scanningFlag) {
+                    console.log("listen->"+store.getState().listeningFlag)
+                    console.log("scan->"+store.getState().scanningFlag)
+                    if (!store.getState().listeningFlag) {
                         _addListenerBeforeScan();
+                    }
+
+                    if (!store.getState().scanningFlag) {
                         store.dispatch(setScanningFlag(true));
                         scanPeripheral(callback);
                     }

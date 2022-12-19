@@ -42,8 +42,7 @@ const Item = ({item, onPress, style}) => (
     </TouchableOpacity>
 );
 
-export default class HeatIndexPage extends Component {
-
+export default class HeatHomePage extends Component {
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
         log_info("error is "+JSON.stringify(error))
     }
@@ -51,19 +50,20 @@ export default class HeatIndexPage extends Component {
     constructor(props) {
         super(props);
         this.navigation = this.props.navigation;
-        startBle();
+
     }
 
     render() {
         return (
             <Provider>
-                <IndexPageView navigation={this.navigation}/>
+                <HeatHomePageView navigation={this.navigation}/>
             </Provider>
         );
     }
 }
 
-export const IndexPageView = props => {
+export const HeatHomePageView = props => {
+    const returnImg = require('../../../images/return.png');
     const navigation = props.navigation;
     const currentTimer = useRef();
 
@@ -99,13 +99,11 @@ export const IndexPageView = props => {
         // log_info("nearbyDeviceList is "+JSON.stringify(nearbyDeviceList))
         // log_info("store "+JSON.stringify(store.getState().nearbyDeviceList))
         scanAllDevice();
-        setTimeout(() => {
-            // setNearbyDeviceList(getDeviceNearby());
-            if (nearbyDeviceList_changed_times === 10000) {
-                nearbyDeviceList_changed_times = 0;
-            }
-            setNearbyDeviceList_changed_times(nearbyDeviceList_changed_times + 1);
-        }, 1000);
+        setRefreshingFlag(false);
+        if (nearbyDeviceList_changed_times === 10000) {
+            nearbyDeviceList_changed_times = 0;
+        }
+        setNearbyDeviceList_changed_times(nearbyDeviceList_changed_times + 1);
     }
 
     const _logOut = () => {
@@ -141,9 +139,8 @@ export const IndexPageView = props => {
     };
 
     const _itemClick = item => {
-        // scanAllDevice();
         clearInterval(currentTimer.current);
-        navigation.navigate('DetailPage', {item: item});
+        navigation.navigate('HeatDetailPage', {item: item});
     };
 
     const _stopOneByOne = (deviceList, index) => {
@@ -214,6 +211,10 @@ export const IndexPageView = props => {
             notify(NoNeedUpgradeApp)
         }
     }
+    const _back = () => {
+        clearInterval(currentTimer.current);
+        navigation.navigate('HomePage');
+    };
 
     return (
         <View style={styles.container}>
@@ -246,6 +247,15 @@ export const IndexPageView = props => {
                 resizeMode={'contain'}
                 style={styles.headerImg}
                 source={headerImg}></Image>
+            <View style={{top:10,left:10,position:"absolute"}}>
+                <View style={styles.top_back}>
+                    <TouchableOpacity
+                        onPress={_back}
+                        activeOpacity={1}>
+                        <Image style={styles.image} source={returnImg}/>
+                    </TouchableOpacity>
+                </View>
+            </View>
             <ActionButton buttonColor="green" zIndex={99}>
                 <ActionButton.Item buttonColor='#3498db' title="Upgrade App" onPress={() => {
                     _updateApp()
@@ -276,9 +286,6 @@ export const IndexPageView = props => {
                                 log_info("刷新~~~~~~~");
                                 forceRefreshNearbyDeviceMap();
                                 getMoreData();
-                                setTimeout(() => {
-                                    setRefreshingFlag(false);
-                                }, 500);
                             }}
                         />
                     }

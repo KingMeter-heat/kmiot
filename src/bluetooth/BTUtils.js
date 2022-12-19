@@ -270,6 +270,12 @@ export const connectDevice = (
     success = () => {},
     error = error_message => {},
 ) => {
+    if (!store.getState().listeningFlag) {
+        log_info("addListenerBeforeScan now")
+        addListener();
+        store.dispatch(setListeningFlag(true));
+    }
+
     let needReScan = false;
     //1,获取列表 isConnected
     BleManager.getDiscoveredPeripherals().then(list => {
@@ -402,7 +408,7 @@ export const sendMessageToHardware = async (
                 }
             },
         ).catch(e=>{
-            log_error("send message failed1: "+data+";e is "+JSON.stringify(e))
+            log_error("send message failed 1: "+data+";e is "+JSON.stringify(e))
         });
     } else {
         await BleManager.writeWithoutResponse(
@@ -415,7 +421,7 @@ export const sendMessageToHardware = async (
                 callback();
             }
         }).catch(e=>{
-            log_error("send message failed2: "+data+";e is "+JSON.stringify(e))
+            log_error("send message failed 2: "+data+";e is "+JSON.stringify(e))
         });
     }
 };
