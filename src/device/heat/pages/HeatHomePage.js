@@ -1,22 +1,13 @@
 import React, {Component, useEffect, useRef, useState} from 'react';
 import {Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import headerImg from '../../../images/index_header.png';
+import headerImg from '../../../images/index_header_heat.png';
 import {FlatList} from 'react-native-gesture-handler';
 import {FONT_COLOR, THEME_BACKEND, THEME_LIST_BACKEND,} from '../../../components/constant/Color';
 import {DEVICE_WIDTH} from '../../../components/constant/Size';
 import Provider from '@ant-design/react-native/lib/provider';
-import {
-    queryHeatShoeInfo,
-    shutDown,
-} from '../HeatFuctions';
+import {queryHeatShoeInfo, shutDown,} from '../HeatFuctions';
 
-import {
-    connect,
-    forceRefreshNearbyDeviceMap,
-    removeAllListener,
-    scanAllDevice,
-    startBle,
-} from '../../DeviceFunctions';
+import {connect, forceRefreshNearbyDeviceMap, removeAllListener, scanAllDevice,} from '../../DeviceFunctions';
 import {notify} from '../../../components/notify/notify';
 import {log_info} from '../../../utils/LogUtils';
 import ActionButton from 'react-native-action-button';
@@ -73,7 +64,19 @@ export const HeatHomePageView = props => {
 
     let [nearbyDeviceList_changed_times, setNearbyDeviceList_changed_times] = useState(0);
 
-    const nearbyDeviceList = useSelector(store => store.nearbyDeviceList);
+    const nearbyDeviceList = useSelector(store => {
+        console.log("nearbyDeviceList->2 "+store.nearbyDeviceList)
+        let currentList = [];
+        if(store.nearbyDeviceList){
+            for (let tmp of store.nearbyDeviceList){
+                if(tmp.type === DEVICE_TYPE.HEAT){
+                    console.log(tmp.title+"->"+tmp.type)
+                    currentList.push(tmp);
+                }
+            }
+        }
+        return currentList;
+    });
 
     const [progress, setProgress] = useState(0);
     const [progressModalVisible, setProgressModalVisible] = useState(false);
@@ -121,10 +124,6 @@ export const HeatHomePageView = props => {
         //     // buttonAnimated.setValue(0);
         //     // growAnimated.setValue(0);
         // }, 100);
-    };
-
-    const _gotoLoginPage = () => {
-        navigation.navigate('LoginPage');
     };
 
     const _renderItem = ({item}) => {

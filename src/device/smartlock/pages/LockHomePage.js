@@ -1,20 +1,14 @@
 import {Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import React, {Component, useEffect, useRef, useState} from "react";
 import {log_info} from "../../../utils/LogUtils";
-import {
-    disConnect,
-    forceRefreshNearbyDeviceMap,
-    isConnected,
-    removeAllListener,
-    scanAllDevice,
-    startBle
-} from "../../DeviceFunctions";
+import {forceRefreshNearbyDeviceMap, removeAllListener, scanAllDevice} from "../../DeviceFunctions";
 import Provider from "@ant-design/react-native/lib/provider";
 import {FlatList} from "react-native-gesture-handler";
 import {FONT_COLOR, THEME_BACKEND, THEME_LIST_BACKEND} from "../../../components/constant/Color";
 import {DEVICE_WIDTH} from "../../../components/constant/Size";
 import {useSelector} from "react-redux";
-import headerImg from "../../../images/index_header.png";
+import headerImg from "../../../images/index_header_smartlock.png";
+import {DEVICE_TYPE} from "../../DeviceType";
 
 
 const SIZE = 40;
@@ -58,7 +52,19 @@ export const LockHomePageView = props => {
 
     let [nearbyDeviceList_changed_times, setNearbyDeviceList_changed_times] = useState(0);
 
-    const nearbyDeviceList = useSelector(store => store.nearbyDeviceList);
+    const nearbyDeviceList = useSelector(store => {
+        // console.log("nearbyDeviceList->2 "+store.nearbyDeviceList)
+        let currentList = [];
+        if(store.nearbyDeviceList){
+            for (let tmp of store.nearbyDeviceList){
+                if(tmp.type === DEVICE_TYPE.SmartLockGen1||
+                    tmp.type === DEVICE_TYPE.SmartLockGen2){
+                    currentList.push(tmp);
+                }
+            }
+        }
+        return currentList;
+    });
 
     const [progress, setProgress] = useState(0);
     const [progressModalVisible, setProgressModalVisible] = useState(false);
@@ -75,7 +81,7 @@ export const LockHomePageView = props => {
     }, []);
 
     const getMoreData = () => {
-        log_info("now nearbyDeviceList is "+JSON.stringify(nearbyDeviceList))
+        // log_info("now nearbyDeviceList is "+JSON.stringify(nearbyDeviceList))
         // log_info("store "+JSON.stringify(store.getState().nearbyDeviceList))
         scanAllDevice();
         setRefreshingFlag(false);

@@ -8,6 +8,8 @@ import {store} from "../../bluetooth/redux/BTStore";
 import {setNearbyDeviceMap} from "../../bluetooth/redux/BTActions";
 
 import {_sendCommandToLock, validateBeforeAction} from "../DeviceFunctions";
+import {DeviceType} from "react-native-device-info";
+import {DEVICE_TYPE} from "../DeviceType";
 
 export const isThisShoeNearby = (mac, existCallback, notExistCallback) => {
     isThisDeviceNearby(mac, existCallback, notExistCallback);
@@ -70,6 +72,7 @@ export const rename = (mac, name, success, error) => {
     newMap.set(mac, {
         id: mac,
         title: name,
+        type: DEVICE_TYPE.HEAT
     });
     store.dispatch(setNearbyDeviceMap(newMap));
 

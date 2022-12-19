@@ -15,7 +15,7 @@ export const device_discover_notify_business = async (
     //     peripheral.device_type = DEVICE_TYPE.HEAT;
     //     heat_discover_notify(peripheral, customerId, deviceType, data);
     // }else\
-    console.log("discover device type "+deviceType)
+    // console.log("discover device type "+deviceType)
     if (deviceType === DEVICE_TYPE.SmartLockGen1) {
         peripheral.device_type = DEVICE_TYPE.SmartLockGen1;
         smartlock_discover_notify(peripheral, customerId, deviceType, data);

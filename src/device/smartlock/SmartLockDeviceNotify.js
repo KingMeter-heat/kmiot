@@ -40,6 +40,7 @@ export const smartlock_discover_notify = async (
         newMap.set(id, {
             id: id,
             title: name,
+            type: deviceType,
         });
         store.dispatch(setNearbyDeviceMap(newMap));
     }

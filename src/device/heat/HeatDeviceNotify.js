@@ -63,6 +63,7 @@ export const heat_discover_notify = async (
         newMap.set(id, {
             id: id,
             title: name,
+            type:deviceType
         });
         store.dispatch(setNearbyDeviceMap(newMap));
     }

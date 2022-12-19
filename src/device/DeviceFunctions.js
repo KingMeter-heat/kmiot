@@ -40,9 +40,8 @@ export const scanAllDevice = (callback = () => {
         () => {
             checkBlueToothStateAndOpen(
                 () => {
-                    // nearbyDeviceMap.clear();
-                    console.log("listen->"+store.getState().listeningFlag)
-                    console.log("scan->"+store.getState().scanningFlag)
+                    // console.log("listen->"+store.getState().listeningFlag)
+                    // console.log("scan->"+store.getState().scanningFlag)
                     if (!store.getState().listeningFlag) {
                         _addListenerBeforeScan();
                     }

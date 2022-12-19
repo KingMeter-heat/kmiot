@@ -42,6 +42,7 @@ export const setNearbyDeviceMap = map => {
         result.push({
             id: id, //mac
             title: info.title,
+            type:info.type
         });
     });
 
