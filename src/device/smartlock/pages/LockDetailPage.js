@@ -111,11 +111,14 @@ export const LockDetailPageHook = props => {
                 log_info("device connected ---->  " + lockInitialedCount.current);
                 let deviceInfoMap = store.getState().deviceInfoMap;
                 if (deviceInfoMap != undefined && deviceInfoMap.has(currentMac)) {
+                    let info = deviceInfoMap.get(currentMac);
                     if (lockInitialedCount.current === 0) {
-                        encrypt_device(currentMac, "00000000", () => {
-                            console.log("send validation")
-                        });
-                        lockInitialedCount.current = 1;
+                        if(info.getCounterInitFlag()){
+                            encrypt_device(currentMac, "00000000", () => {
+                                console.log("send validation")
+                            });
+                            lockInitialedCount.current = 1;
+                        }
                     } else {
                         querySmartLockInfo(currentMac);
                     }
@@ -123,7 +126,7 @@ export const LockDetailPageHook = props => {
                     setCodeButtonColorStyle({color: THEME_BACKEND});
                 }
             }
-        }, 1000);
+        }, 10000);
     }
 
     const _connectPress = (checked) => {

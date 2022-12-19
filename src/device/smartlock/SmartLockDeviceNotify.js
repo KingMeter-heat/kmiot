@@ -18,6 +18,7 @@ export const smartlock_discover_notify = async (
     let info = new SmartLockInfo();
     if (deviceInfoMap.has(id)) {
         info = deviceInfoMap.get(id);
+        info.setCounterInitFlag(false);
     }
     info.setName(name);
     info.setCustomerId(customerId);
@@ -51,6 +52,9 @@ export const smartlock_upload_notify = (mac, data) => {
     let result = Bytes2HexString(data);
     if (result.toUpperCase().indexOf('C9') !== -1) {
         let code = result.toUpperCase().substring(0, 4);
+
+        console.log("data notify -> code"+code +",data:"+data)
+
         switch (code) {
             case CODE_DEVICE_INFO:
                 lockInfoNotify(mac, data);
@@ -114,6 +118,7 @@ const lockInfoNotify = (id, res) => {
         hardware_version,
         customerId,
         battery_capacity,
+        true
     );
 
     log_info("counter is "+counter+",get info from lock "+JSON.stringify(info))

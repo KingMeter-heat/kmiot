@@ -13,6 +13,7 @@ export default class SmartLockInfo {
     hardware_version;
     customerId;
     battery_capacity;
+    counter_init_flag;
 
     constructor(
         mac: string,
@@ -22,6 +23,7 @@ export default class SmartLockInfo {
         hardware_version: number,
         customerId: string,
         battery_capacity: number,
+        counter_init_flag: boolean
     ) {
         if (mac == null || mac == '') {
             this.mac = '';
@@ -31,6 +33,7 @@ export default class SmartLockInfo {
             this.hardware_version = 0;
             this.customerId = '';
             this.battery_capacity = 0;
+            this.counter_init_flag = false;
             return;
         }
         this.mac = mac;
@@ -40,12 +43,13 @@ export default class SmartLockInfo {
         this.hardware_version = hardware_version;
         this.customerId = customerId;
         this.battery_capacity = battery_capacity;
+        this.encrypted = encrypted;
     }
 
     toString = () => {
         return "{'mac':'" + this.mac + "','name':'" + this.name + "','customerId':" + this.customerId + ",'software':'" + this.software_version + "'," +
             "'hardware':'" + this.hardware_version + "','ble_version':" + this.ble_version + "," +
-            "'battery_capacity':" + this.battery_capacity + "}";
+            "'battery_capacity':" + this.battery_capacity + "'counter_init_flag':" + this.counter_init_flag + "}";
     }
 
     setName = name => {
@@ -67,4 +71,11 @@ export default class SmartLockInfo {
         this.customerId = customerId;
     }
 
+    setCounterInitFlag = counter_init_flag => {
+        this.counter_init_flag = counter_init_flag;
+    }
+
+    getCounterInitFlag = ()=>{
+        return this.counter_init_flag;
+    }
 }
