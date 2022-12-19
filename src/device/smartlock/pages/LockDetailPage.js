@@ -102,6 +102,7 @@ export const LockDetailPageHook = props => {
     }
 
     const _dealWithConnected = async () => {
+        //we need to know the current capacity of the battery
         currentUpdateInfoTimer.current = setInterval(() => {
             if (!isConnected(currentMac)) {
                 log_info("device not connected");
@@ -126,7 +127,7 @@ export const LockDetailPageHook = props => {
                     setCodeButtonColorStyle({color: THEME_BACKEND});
                 }
             }
-        }, 10000);
+        }, 1000);
     }
 
     const _connectPress = (checked) => {
