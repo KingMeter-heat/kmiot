@@ -1,6 +1,6 @@
 import React, {Component, useEffect, useRef, useState} from 'react';
 import Provider from "@ant-design/react-native/lib/provider";
-import {BATTERY_GRID, FONT_COLOR, THEME_BACKEND, THEME_GREY} from "../../../components/constant/Color";
+import {BATTERY_GRID, FONT_COLOR, THEME_BACKEND, THEME_GREY, UPGRADE_COLOR} from "../../../components/constant/Color";
 import {log_info} from "../../../utils/LogUtils";
 import {connect, disConnect, isConnected} from "../../DeviceFunctions";
 import {store} from "../../../bluetooth/redux/BTStore";
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     top_view1: {
         flexDirection: 'column',
         justifyContent: 'center',
-        backgroundColor: THEME_BACKEND,
+        backgroundColor: '#248af8',
         height: 80,
     },
     top_view2: {
