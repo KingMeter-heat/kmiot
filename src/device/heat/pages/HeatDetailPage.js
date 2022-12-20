@@ -93,16 +93,14 @@ export const HeatDetailPageHook = props => {
     }, [])
 
     const _back = () => {
-
         clearInterval(currentUpdateInfoTimer.current);
-
         if (isConnected(currentMac)) {
             log_info("back 0,device connected")
             disConnect(currentMac);
+            _dealWithDisconnected();
         } else {
             log_info("back 0,device not connected")
         }
-
         _gotoIndexPage();
     };
 
@@ -129,7 +127,7 @@ export const HeatDetailPageHook = props => {
                 log_info("device connected");
                 queryHeatShoeInfo(currentMac);
                 let deviceInfoMap = store.getState().deviceInfoMap;
-                if (deviceInfoMap != undefined && deviceInfoMap.has(currentMac)) {
+                if (deviceInfoMap !== undefined && deviceInfoMap.has(currentMac)) {
                     _showDeviceInfo(deviceInfoMap.get(currentMac));
                 }
             }
@@ -148,9 +146,7 @@ export const HeatDetailPageHook = props => {
         } else {
             //断开设备
             disConnect(currentMac);
-            setTimeout(() => {
-                _dealWithDisconnected();
-            }, 1000);
+            _dealWithDisconnected();
         }
     }
 
