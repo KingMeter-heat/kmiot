@@ -13,6 +13,11 @@ export default class SmartLockInfo {
     hardware_version;
     customerId;
     battery_capacity;
+    /**
+     * 0: discover device
+     * 1: first information upload
+     * 2：encrypt command has been sent
+     */
     counter_init_flag;
 
     constructor(
@@ -23,7 +28,7 @@ export default class SmartLockInfo {
         hardware_version: number,
         customerId: string,
         battery_capacity: number,
-        counter_init_flag: boolean
+        counter_init_flag: number
     ) {
         if (mac == null || mac == '') {
             this.mac = '';
@@ -33,7 +38,7 @@ export default class SmartLockInfo {
             this.hardware_version = 0;
             this.customerId = '';
             this.battery_capacity = 0;
-            this.counter_init_flag = false;
+            this.counter_init_flag = 0;
             return;
         }
         this.mac = mac;
@@ -43,7 +48,7 @@ export default class SmartLockInfo {
         this.hardware_version = hardware_version;
         this.customerId = customerId;
         this.battery_capacity = battery_capacity;
-        this.encrypted = encrypted;
+        this.counter_init_flag = counter_init_flag;
     }
 
     toString = () => {

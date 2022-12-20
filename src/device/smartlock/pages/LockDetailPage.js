@@ -7,7 +7,7 @@ import {store} from "../../../bluetooth/redux/BTStore";
 import {encrypt_device, querySmartLockInfo, unlock} from "../SmartLockFunctions";
 import {DEVICE_TYPE} from "../../DeviceType";
 import {notify} from "../../../components/notify/notify";
-import {setPeripheralMap2} from "../../../bluetooth/redux/BTActions";
+import {setDeviceInfoMap, setPeripheralMap2} from "../../../bluetooth/redux/BTActions";
 import {YouNeedToConnectDeviceNotification} from "../../../business/Language";
 import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import Battery from "../../../components/battery";
@@ -62,8 +62,6 @@ export const LockDetailPageHook = props => {
 
     const currentUpdateInfoTimer = useRef(0);
 
-    const lockInitialedCount = useRef(0);
-
     const _gotoIndexPage = () => {
         navigation.navigate('LockHomePage');
     };
@@ -83,7 +81,6 @@ export const LockDetailPageHook = props => {
         } else {
             log_info("back 0,device not connected")
         }
-        lockInitialedCount.current = 0;
         _gotoIndexPage();
     };
 
@@ -107,20 +104,18 @@ export const LockDetailPageHook = props => {
             if (!isConnected(currentMac)) {
                 log_info("device not connected");
                 _dealWithDisconnected();
-                lockInitialedCount.current = 0;
             } else {
-                log_info("device connected ---->  " + lockInitialedCount.current);
                 let deviceInfoMap = store.getState().deviceInfoMap;
-                if (deviceInfoMap != undefined && deviceInfoMap.has(currentMac)) {
+                if (deviceInfoMap !== undefined && deviceInfoMap.has(currentMac)) {
                     let info = deviceInfoMap.get(currentMac);
-                    if (lockInitialedCount.current === 0) {
-                        if(info.getCounterInitFlag()){
-                            encrypt_device(currentMac, "00000000", () => {
-                                console.log("send validation")
-                            });
-                            lockInitialedCount.current = 1;
-                        }
-                    } else {
+                    if (info.getCounterInitFlag() === 1) {
+                        encrypt_device(currentMac, "00000000", () => {
+                            console.log("send validation");
+                            info.setCounterInitFlag(2);
+                            deviceInfoMap.set(currentMac, info);
+                            store.dispatch(setDeviceInfoMap(deviceInfoMap));
+                        });
+                    } else if (info.getCounterInitFlag() === 2) {
                         querySmartLockInfo(currentMac);
                     }
                     _showDeviceInfo(deviceInfoMap.get(currentMac));
@@ -172,6 +167,12 @@ export const LockDetailPageHook = props => {
                 store.dispatch(setPeripheralMap2(newMap));
             }
         }
+        let deviceInfoMap = store.getState().deviceInfoMap;
+        let info = deviceInfoMap.get(currentMac);
+        info.setCounterInitFlag(0);
+        deviceInfoMap.set(currentMac, info);
+        store.dispatch(setDeviceInfoMap(deviceInfoMap));
+
         clearInterval(currentUpdateInfoTimer.current);
     }
 

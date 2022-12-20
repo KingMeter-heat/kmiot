@@ -18,7 +18,7 @@ export const smartlock_discover_notify = async (
     let info = new SmartLockInfo();
     if (deviceInfoMap.has(id)) {
         info = deviceInfoMap.get(id);
-        info.setCounterInitFlag(false);
+        info.setCounterInitFlag(0);
     }
     info.setName(name);
     info.setCustomerId(customerId);
@@ -53,14 +53,14 @@ export const smartlock_upload_notify = (mac, data) => {
     if (result.toUpperCase().indexOf('C9') !== -1) {
         let code = result.toUpperCase().substring(0, 4);
 
-        console.log("data notify -> code"+code +",data:"+data)
+        console.log("data notify -> code" + code + ",data:" + data)
 
         switch (code) {
             case CODE_DEVICE_INFO:
                 lockInfoNotify(mac, data);
                 break;
             case CODE_ENCRYPT_VALIDATE:
-                encryptValidate(mac,data);
+                encryptValidate(mac, data);
                 break;
             default:
                 break;
@@ -118,18 +118,26 @@ const lockInfoNotify = (id, res) => {
         hardware_version,
         customerId,
         battery_capacity,
-        true
+        0
     );
 
-    log_info("counter is "+counter+",get info from lock "+JSON.stringify(info))
+    log_info("counter is " + counter + ",get info from lock " + JSON.stringify(info))
 
     let deviceInfoMap = store.getState().deviceInfoMap;
+    if (deviceInfoMap.has(id)) {
+        let previous_info = deviceInfoMap.get(id);
+        if (previous_info.getCounterInitFlag() === 0) {
+            info.setCounterInitFlag(1);
+        } else {
+            info.setCounterInitFlag(previous_info.getCounterInitFlag());
+        }
+    }
     deviceInfoMap.set(id, info);
     store.dispatch(setDeviceInfoMap(deviceInfoMap));
 }
 
 
-const encryptValidate=(id,res)=>{
+const encryptValidate = (id, res) => {
     let result = Bytes2Int(res[2]);
-    console.log("encrypt validate result -> "+result)
+    console.log("encrypt validate result -> " + result)
 }
