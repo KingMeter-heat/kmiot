@@ -78,6 +78,7 @@ export const LockDetailPageHook = props => {
         if (isConnected(currentMac)) {
             log_info("back 0,device connected")
             disConnect(currentMac);
+            _dealWithDisconnected();
         } else {
             log_info("back 0,device not connected")
         }
@@ -137,9 +138,7 @@ export const LockDetailPageHook = props => {
         } else {
             //断开设备
             disConnect(currentMac);
-            setTimeout(() => {
-                _dealWithDisconnected();
-            }, 1000);
+            _dealWithDisconnected();
         }
     }
 
